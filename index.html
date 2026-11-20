@@ -1,0 +1,1557 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>دواء لينك | DawaLink - الشبكة الدوائية المتكاملة</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Cairo for Arabic & Inter for numbers/English -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Cairo', 'Inter', 'sans-serif'],
+            mono: ['Inter', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#f0fdfa',
+              100: '#ccfbf1',
+              500: '#14b8a6',
+              600: '#0d9488',
+              700: '#0f766e',
+              800: '#115e59',
+              900: '#134e4a',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Cairo', 'Inter', sans-serif;
+      background-color: #f8fafc;
+      color: #0f172a;
+      overflow-x: hidden;
+    }
+    .num-en {
+      font-family: 'Inter', sans-serif;
+      direction: ltr;
+      display: inline-block;
+    }
+    /* Custom subtle scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade {
+      animation: fadeIn 0.25s ease-out forwards;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col bg-slate-50 text-slate-800">
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="fixed bottom-4 left-4 right-4 sm:right-auto sm:w-96 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- Admin Security Banner (Visible ONLY when Khaled is actively logged in during current RAM session) -->
+  <div id="admin-session-banner" class="hidden bg-slate-900 text-white border-b border-amber-500/40 px-4 py-2.5 text-xs sm:text-sm">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
+      <div class="flex items-center gap-2">
+        <span class="inline-flex h-2.5 w-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span class="font-bold text-amber-300">وضع الإدارة نشط (أ. خالد)</span>
+        <span class="hidden md:inline text-slate-300">| الجلسة معزولة في الذاكرة المؤقتة ولن تنتقل عند مشاركة الرابط.</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="copySafePublicLink()" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold transition flex items-center gap-1.5 shadow-sm">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+          <span>نسخ رابط عام آمن</span>
+        </button>
+        <button onclick="logoutAdmin()" class="px-3 py-1.5 rounded-lg bg-rose-600/90 hover:bg-rose-600 text-white font-semibold transition flex items-center gap-1">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+          <span>قفل وخروج</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top Navigation Header -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3">
+      <!-- Brand Logo -->
+      <div class="flex items-center gap-3 cursor-pointer" onclick="switchTab('overview')">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-600 to-teal-800 text-white flex items-center justify-center shadow-sm">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight">دواء لينك</h1>
+            <span class="hidden sm:inline-block text-xs font-bold px-2 py-0.5 rounded-full bg-brand-50 text-brand-700 border border-brand-200 num-en">DawaLink</span>
+          </div>
+          <p class="text-[11px] sm:text-xs text-slate-500">الشبكة الدوائية المتكاملة • الإسكندرية</p>
+        </div>
+      </div>
+
+      <!-- Right Action Controls -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <!-- Safe Public Share Button (Available to everyone, strips all privileges) -->
+        <button onclick="copySafePublicLink()" title="مشاركة رابط عام مجرد من أي صلاحيات" class="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs sm:text-sm font-semibold transition flex items-center gap-1.5 border border-slate-200">
+          <svg class="w-4 h-4 text-brand-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+          <span class="hidden sm:inline">مشاركة رابط آمن</span>
+          <span class="sm:hidden">مشاركة</span>
+        </button>
+
+        <!-- Admin Portal Entry / Status Button -->
+        <button id="header-admin-btn" onclick="handleAdminButtonClick()" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-900 text-white text-xs sm:text-sm font-semibold transition flex items-center gap-1.5 shadow-sm">
+          <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+          <span id="header-admin-btn-text">دخول الإدارة</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Role Navigation Tabs -->
+    <div class="bg-slate-50/90 border-t border-slate-200/80">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <nav id="role-tabs" class="flex items-center gap-1.5 py-2 overflow-x-auto no-scrollbar" aria-label="بوابات الشبكة">
+          <!-- Rendered dynamically by JS -->
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main id="app-content" class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <!-- Rendered dynamically by JS -->
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-slate-200 mt-12 py-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+      <div class="flex items-center gap-2">
+        <span class="font-bold text-slate-700">دواء لينك (DawaLink)</span>
+        <span>•</span>
+        <span>منظومة ربط الصيدليات والمرضى والأطباء وشركات الأدوية والمخازن</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="inline-flex items-center gap-1 text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200 font-medium">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+          <span>الروابط المشاركة معزولة الصلاحيات تلقائياً</span>
+        </span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Strict Password-Protected Admin Login Modal (NO credential hints, NO quick-fill, brute-force lock) -->
+  <div id="admin-login-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 animate-fade">
+      <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+        <div class="flex items-center gap-2.5">
+          <div class="w-10 h-10 rounded-xl bg-slate-900 text-amber-400 flex items-center justify-center">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+          </div>
+          <div>
+            <h3 class="font-bold text-slate-900 text-base">بوابة الإدارة والرقابة</h3>
+            <p class="text-xs text-slate-500">دخول مصرح به للمشرفين فقط</p>
+          </div>
+        </div>
+        <button onclick="closeAdminModal()" class="p-2 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <form onsubmit="submitAdminLogin(event)" class="mt-4 space-y-4" autocomplete="off">
+        <div class="p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 leading-relaxed">
+          <strong>تنبيه أمني:</strong> هذه الجلسة تعمل في الذاكرة المؤقتة فقط. عند مشاركة رابط الموقع مع أي شخص، سيفتح لديه بوضع الزائر العام ولن يمتلك أي صلاحيات إدارة.
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1.5">اسم المشرف</label>
+          <input id="admin-username-input" type="text" required autocomplete="off" placeholder="أدخل اسم المشرف" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-600 text-sm" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1.5">كلمة المرور</label>
+          <div class="relative">
+            <input id="admin-password-input" type="password" required autocomplete="new-password" placeholder="••••••••" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-600 text-sm num-en text-right" />
+            <button type="button" onclick="toggleAdminPasswordVisibility()" class="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-slate-500 hover:text-slate-800 font-semibold">
+              إظهار
+            </button>
+          </div>
+        </div>
+
+        <div id="admin-login-error" class="hidden p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 font-semibold"></div>
+
+        <div class="flex items-center justify-end gap-2 pt-2">
+          <button type="button" onclick="closeAdminModal()" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold">إلغاء</button>
+          <button id="admin-login-submit-btn" type="submit" class="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-sm font-bold shadow-sm transition">
+            تحقق ودخول
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Price Violation Report Modal -->
+  <div id="report-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 animate-fade">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <h3 class="font-bold text-slate-900 text-base">بلاغ موثق عن اختلاف التسعيرة الجبرية</h3>
+        <button onclick="closeReportModal()" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-600">✕</button>
+      </div>
+      <form onsubmit="submitPriceReport(event)" class="mt-4 space-y-3.5">
+        <input type="hidden" id="report-pharmacy-name" />
+        <input type="hidden" id="report-drug-name" />
+        <input type="hidden" id="report-official-price" />
+        <div id="report-summary-box" class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700"></div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">السعر الذي طلبته الصيدلية (ج.م)</label>
+          <input id="report-charged-price" type="number" step="0.5" required placeholder="مثال: 145" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-sm num-en" />
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">رقم الفاتورة أو الباركود المطبوع على العلبة (لضمان جدية البلاغ)</label>
+          <input id="report-receipt-code" type="text" required placeholder="مثال: INV-88412" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-sm num-en" />
+        </div>
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closeReportModal()" class="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold">إلغاء</button>
+          <button type="submit" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold">إرسال البلاغ للرقابة</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================
+    // 1. ZERO-LEAKAGE URL & SESSION SECURITY GUARD
+    // =========================================================
+    // Sanitize URL immediately on load so shared links NEVER carry admin tabs,
+    // role tokens, or privileged states from sender to recipient.
+    (function sanitizeSharedUrl() {
+      try {
+        const cleanUrl = window.location.origin + window.location.pathname;
+        if (window.location.hash || window.location.search) {
+          window.history.replaceState(null, document.title, cleanUrl);
+        }
+      } catch (e) {
+        // Ignore in sandboxed iframe environments where history.replaceState may be restricted
+      }
+    })();
+
+    // Ephemeral RAM-only state (NEVER persisted to localStorage/sessionStorage/URL)
+    const state = {
+      activeTab: 'overview',
+      selectedPharmacyId: 'ph-1',
+      patientSearch: '',
+      patientDistrict: 'الكل',
+      rxLookupInput: '',
+      rxLookupResult: null,
+      adminAuth: {
+        isAuthenticated: false,
+        adminName: '',
+        failedAttempts: 0,
+        lockUntil: 0
+      },
+      // Master Drug Catalog (Unified Official Pricing & Active Ingredients)
+      drugsCatalog: [
+        { id: 'd-1', barcode: '6221001001', name: 'أوجمنتين 1 جم (14 قرص)', activeIngredient: 'Amoxicillin + Clavulanic Acid', officialPrice: 138, company: 'GSK مصر', category: 'مضاد حيوي' },
+        { id: 'd-2', barcode: '6221001002', name: 'بنادول إكسترا (24 قرص)', activeIngredient: 'Paracetamol + Caffeine', officialPrice: 48, company: 'هاليون مصر', category: 'مسكن وخافض' },
+        { id: 'd-3', barcode: '6221001003', name: 'كلكسان 40 مجم (2 سرنجة)', activeIngredient: 'Enoxaparin Sodium', officialPrice: 310, company: 'سانوفي مصر', category: 'مضاد للتجلط' },
+        { id: 'd-4', barcode: '6221001004', name: 'إنوهيب 4500 وحدة (مثيل كلكسان)', activeIngredient: 'Enoxaparin Sodium', officialPrice: 285, company: 'ليو فارما', category: 'مضاد للتجلط' },
+        { id: 'd-5', barcode: '6221001005', name: 'كونكور 5 مجم (30 قرص)', activeIngredient: 'Bisoprolol Fumarate', officialPrice: 78, company: 'ميرك مصر', category: 'قلب وضغط' },
+        { id: 'd-6', barcode: '6221001006', name: 'فولتارين 50 مجم (20 قرص)', activeIngredient: 'Diclofenac Sodium', officialPrice: 54, company: 'نوفارتس مصر', category: 'مضاد للالتهاب' }
+      ],
+      // Verified Pharmacies & Live POS Stock
+      pharmacies: [
+        {
+          id: 'ph-1',
+          name: 'صيدلية الشفاء الحديثة',
+          district: 'سموحة',
+          address: 'شارع فوزي معاذ - أمام نادي سموحة',
+          phone: '01001122334',
+          posConnected: true,
+          verified: true,
+          stock: { 'd-1': 14, 'd-2': 32, 'd-3': 0, 'd-4': 9, 'd-5': 18, 'd-6': 3 }
+        },
+        {
+          id: 'ph-2',
+          name: 'صيدليات النور المتكاملة',
+          district: 'سيدي جابر',
+          address: 'شارع المشير أحمد إسماعيل - سيدي جابر',
+          phone: '01112233445',
+          posConnected: true,
+          verified: true,
+          stock: { 'd-1': 6, 'd-2': 25, 'd-3': 0, 'd-4': 12, 'd-5': 4, 'd-6': 19 }
+        },
+        {
+          id: 'ph-3',
+          name: 'صيدلية الأمل الطبية',
+          district: 'لوران',
+          address: 'طريق الحرية - محطة لوران',
+          phone: '01223344556',
+          posConnected: true,
+          verified: true,
+          stock: { 'd-1': 20, 'd-2': 40, 'd-3': 2, 'd-4': 7, 'd-5': 15, 'd-6': 11 }
+        }
+      ],
+      // Active 2-Hour Patient Reservations
+      reservations: [
+        { id: 'RES-901', patientName: 'أحمد محمود', pharmacyId: 'ph-1', drugId: 'd-1', secondsLeft: 6420, status: 'active' }
+      ],
+      // Digital Prescriptions issued by Doctors
+      prescriptions: [
+        { code: 'RX-2026', doctorName: 'د. طارق المنشاوي (باطنة وقلب)', patientName: 'سارة علي', drugIds: ['d-1', 'd-2', 'd-5'], createdAt: 'اليوم 06:15 م' }
+      ],
+      // Warehouse & Distributor Stock + Orders
+      warehouses: [
+        { id: 'wh-1', name: 'المخزن الدوائي المتحد - الإسكندرية', area: 'سموحة والمنتزه', deliveryTime: 'خلال 90 دقيقة', stock: { 'd-1': 500, 'd-2': 1200, 'd-3': 45, 'd-4': 300, 'd-5': 400, 'd-6': 650 } },
+        { id: 'wh-2', name: 'شركة الدلتا للتوزيع الدوائي', area: 'وسط وغرب الإسكندرية', deliveryTime: 'خلال ساعتين', stock: { 'd-1': 350, 'd-2': 900, 'd-3': 30, 'd-4': 250, 'd-5': 320, 'd-6': 400 } }
+      ],
+      warehouseOrders: [
+        { id: 'ORD-501', pharmacyId: 'ph-1', warehouseId: 'wh-1', drugId: 'd-6', qty: 20, status: 'pending', time: 'منذ 12 دقيقة' }
+      ],
+      // B2B Dead-Stock & Near-Expiry Exchange between Pharmacies
+      deadStockOffers: [
+        { id: 'DS-101', fromPharmacyId: 'ph-3', drugId: 'd-5', qty: 10, expiry: '04/2027', discountPercent: 18, claimedBy: null },
+        { id: 'DS-102', fromPharmacyId: 'ph-2', drugId: 'd-6', qty: 12, expiry: '05/2027', discountPercent: 15, claimedBy: null }
+      ],
+      // Admin Queues: Pending Account Verifications & Price Violation Reports
+      pendingVerifications: [
+        { id: 'VER-301', type: 'صيدلية', name: 'صيدلية الكورنيش الحديثة - جليم', licenseNo: 'PH-ALX-9921', docStatus: 'رخصة المزاولة + السجل التجاري مرفقان', district: 'جليم' },
+        { id: 'VER-302', type: 'طبيب', name: 'د. نادية عبد الرحمن (أطفال)', licenseNo: 'DOC-44810', docStatus: 'كارنيه نقابة الأطباء ساري', district: 'سموحة' }
+      ],
+      priceReports: [
+        { id: 'REP-701', pharmacyName: 'صيدلية الأمل الطبية', drugName: 'أوجمنتين 1 جم (14 قرص)', officialPrice: 138, chargedPrice: 155, receiptCode: 'INV-4491', status: 'pending' }
+      ]
+    };
+
+    // =========================================================
+    // 2. SAFE LINK SHARING & ADMIN AUTHENTICATION LOGIC
+    // =========================================================
+    function copySafePublicLink() {
+      // Always generate a clean, privilege-free public URL
+      const safeUrl = window.location.origin + window.location.pathname;
+      copyTextToClipboard(
+        safeUrl,
+        'تم نسخ الرابط العام الآمن! هذا الرابط مجرد من أي صلاحيات إدارة؛ أي شخص يفتحه سيدخل كزائر عادي فقط.'
+      );
+    }
+
+    function copyTextToClipboard(text, successMsg) {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        document.execCommand('copy');
+        showToast(successMsg, 'success');
+      } catch (err) {
+        showToast('تم تجهيز الرابط الآمن: ' + text, 'info');
+      }
+      document.body.removeChild(textarea);
+    }
+
+    function handleAdminButtonClick() {
+      if (state.adminAuth.isAuthenticated) {
+        switchTab('admin');
+      } else {
+        openAdminModal();
+      }
+    }
+
+    function openAdminModal() {
+      const modal = document.getElementById('admin-login-modal');
+      const errBox = document.getElementById('admin-login-error');
+      const userInp = document.getElementById('admin-username-input');
+      const passInp = document.getElementById('admin-password-input');
+      if (errBox) errBox.classList.add('hidden');
+      if (userInp) userInp.value = '';
+      if (passInp) {
+        passInp.value = '';
+        passInp.type = 'password';
+      }
+      if (modal) modal.classList.remove('hidden');
+      setTimeout(() => { if (userInp) userInp.focus(); }, 50);
+    }
+
+    function closeAdminModal() {
+      const modal = document.getElementById('admin-login-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function toggleAdminPasswordVisibility() {
+      const passInp = document.getElementById('admin-password-input');
+      if (!passInp) return;
+      passInp.type = passInp.type === 'password' ? 'text' : 'password';
+    }
+
+    function submitAdminLogin(e) {
+      e.preventDefault();
+      const errBox = document.getElementById('admin-login-error');
+      const now = Date.now();
+
+      if (state.adminAuth.lockUntil > now) {
+        const secs = Math.ceil((state.adminAuth.lockUntil - now) / 1000);
+        errBox.textContent = `تم قفل المحاولات مؤقتاً لأسباب أمنية. يرجى الانتظار ${secs} ثانية.`;
+        errBox.classList.remove('hidden');
+        return;
+      }
+
+      const username = (document.getElementById('admin-username-input').value || '').trim();
+      const password = (document.getElementById('admin-password-input').value || '').trim();
+
+      if (username === 'خالد' && password === 'ELPREMO') {
+        state.adminAuth.isAuthenticated = true;
+        state.adminAuth.adminName = 'أ. خالد';
+        state.adminAuth.failedAttempts = 0;
+        closeAdminModal();
+        updateAdminSecurityUI();
+        switchTab('admin');
+        showToast('أهلاً بك أ. خالد. تم تفعيل جلسة الإدارة في الذاكرة المؤقتة المعزولة.', 'success');
+      } else {
+        state.adminAuth.failedAttempts += 1;
+        if (state.adminAuth.failedAttempts >= 3) {
+          state.adminAuth.lockUntil = Date.now() + 30000;
+          state.adminAuth.failedAttempts = 0;
+          errBox.textContent = 'تجاوزت الحد المسموح للمحاولات. تم تفعيل القفل الأمني لمدة 30 ثانية.';
+        } else {
+          errBox.textContent = `بيانات الدخول غير صحيحة (${state.adminAuth.failedAttempts}/3).`;
+        }
+        errBox.classList.remove('hidden');
+      }
+    }
+
+    function logoutAdmin() {
+      state.adminAuth.isAuthenticated = false;
+      state.adminAuth.adminName = '';
+      if (state.activeTab === 'admin') {
+        state.activeTab = 'overview';
+      }
+      updateAdminSecurityUI();
+      renderTabs();
+      renderCurrentTab();
+      showToast('تم قفل جلسة الإدارة والخروج بنجاح. الموقع الآن بوضع الزائر العام.', 'info');
+    }
+
+    function updateAdminSecurityUI() {
+      const banner = document.getElementById('admin-session-banner');
+      const btnText = document.getElementById('header-admin-btn-text');
+      const headerBtn = document.getElementById('header-admin-btn');
+
+      if (state.adminAuth.isAuthenticated) {
+        if (banner) banner.classList.remove('hidden');
+        if (btnText) btnText.textContent = 'لوحة الإدارة (أ. خالد)';
+        if (headerBtn) {
+          headerBtn.classList.remove('bg-slate-800', 'hover:bg-slate-900');
+          headerBtn.classList.add('bg-amber-600', 'hover:bg-amber-700');
+        }
+      } else {
+        if (banner) banner.classList.add('hidden');
+        if (btnText) btnText.textContent = 'دخول الإدارة';
+        if (headerBtn) {
+          headerBtn.classList.add('bg-slate-800', 'hover:bg-slate-900');
+          headerBtn.classList.remove('bg-amber-600', 'hover:bg-amber-700');
+        }
+      }
+    }
+
+    // Keyboard shortcut Ctrl+Shift+L for quick Admin modal access
+    document.addEventListener('keydown', function (e) {
+      if (e.ctrlKey && e.shiftKey && (e.key === 'L' || e.key === 'l' || e.key === 'م')) {
+        e.preventDefault();
+        handleAdminButtonClick();
+      }
+    });
+
+    // =========================================================
+    // 3. HELPER FUNCTIONS & LIVE RESERVATION TIMER
+    // =========================================================
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      if (!container) return;
+      const colors = {
+        success: 'bg-emerald-900 text-white border-emerald-500',
+        error: 'bg-rose-900 text-white border-rose-500',
+        info: 'bg-slate-900 text-white border-brand-500'
+      };
+      const el = document.createElement('div');
+      el.className = `pointer-events-auto p-3.5 rounded-xl border-r-4 shadow-xl text-xs sm:text-sm font-medium animate-fade ${colors[type] || colors.info}`;
+      el.textContent = message;
+      container.appendChild(el);
+      setTimeout(() => {
+        el.style.opacity = '0';
+        el.style.transition = 'opacity 0.3s ease';
+        setTimeout(() => el.remove(), 300);
+      }, 4200);
+    }
+
+    function formatCountdown(totalSecs) {
+      const h = Math.floor(totalSecs / 3600);
+      const m = Math.floor((totalSecs % 3600) / 60);
+      const s = totalSecs % 60;
+      return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    }
+
+    setInterval(() => {
+      let updated = false;
+      state.reservations.forEach(r => {
+        if (r.status === 'active' && r.secondsLeft > 0) {
+          r.secondsLeft -= 1;
+          updated = true;
+        }
+      });
+      if (updated && (state.activeTab === 'patient' || state.activeTab === 'pharmacy')) {
+        document.querySelectorAll('[data-res-timer]').forEach(el => {
+          const id = el.getAttribute('data-res-timer');
+          const res = state.reservations.find(x => x.id === id);
+          if (res) el.textContent = formatCountdown(res.secondsLeft);
+        });
+      }
+    }, 1000);
+
+    function getDrugById(id) {
+      return state.drugsCatalog.find(d => d.id === id);
+    }
+
+    function getPharmacyById(id) {
+      return state.pharmacies.find(p => p.id === id);
+    }
+
+    // =========================================================
+    // 4. NAVIGATION TABS RENDERING
+    // =========================================================
+    function switchTab(tabId) {
+      // Guard: Never allow switching to 'admin' unless authenticated in RAM
+      if (tabId === 'admin' && !state.adminAuth.isAuthenticated) {
+        openAdminModal();
+        return;
+      }
+      state.activeTab = tabId;
+      renderTabs();
+      renderCurrentTab();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function renderTabs() {
+      const nav = document.getElementById('role-tabs');
+      if (!nav) return;
+
+      const pendingOrdersCount = state.warehouseOrders.filter(o => o.status === 'pending').length;
+      const pendingAdminCount = state.pendingVerifications.length + state.priceReports.filter(r => r.status === 'pending').length;
+
+      const tabs = [
+        { id: 'overview', label: 'نظرة عامة والشبكة', icon: '🌐' },
+        { id: 'patient', label: 'بوابة المريض', icon: '🧑‍⚕️' },
+        { id: 'pharmacy', label: 'الصيدلية (POS)', icon: '🏥' },
+        { id: 'doctor', label: 'الطبيب والروشتة', icon: '🩺' },
+        { id: 'company', label: 'شركات الأدوية', icon: '🏭' },
+        { id: 'warehouse', label: 'المخازن والتوزيع', icon: '🚚', badge: pendingOrdersCount }
+      ];
+
+      // Admin tab ONLY renders in the navigation bar when Khaled is actively authenticated
+      if (state.adminAuth.isAuthenticated) {
+        tabs.push({ id: 'admin', label: 'إدارة المنصة (خالد)', icon: '🛡️', badge: pendingAdminCount, isAdmin: true });
+      }
+
+      nav.innerHTML = tabs.map(t => {
+        const isActive = state.activeTab === t.id;
+        const baseClasses = isActive
+          ? (t.isAdmin ? 'bg-amber-600 text-white shadow-sm' : 'bg-brand-700 text-white shadow-sm')
+          : (t.isAdmin ? 'bg-amber-50 text-amber-900 border border-amber-200 hover:bg-amber-100' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100');
+
+        const badgeHtml = t.badge > 0
+          ? `<span class="px-1.5 py-0.5 text-[10px] font-bold rounded-full num-en ${isActive ? 'bg-white/20 text-white' : 'bg-rose-100 text-rose-700'}">${t.badge}</span>`
+          : '';
+
+        return `
+          <button onclick="switchTab('${t.id}')" class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition flex items-center gap-1.5 ${baseClasses}">
+            <span>${t.icon}</span>
+            <span>${t.label}</span>
+            ${badgeHtml}
+          </button>
+        `;
+      }).join('');
+    }
+
+    function renderCurrentTab() {
+      const container = document.getElementById('app-content');
+      if (!container) return;
+      switch (state.activeTab) {
+        case 'overview': container.innerHTML = renderOverviewTab(); break;
+        case 'patient': container.innerHTML = renderPatientTab(); break;
+        case 'pharmacy': container.innerHTML = renderPharmacyTab(); break;
+        case 'doctor': container.innerHTML = renderDoctorTab(); break;
+        case 'company': container.innerHTML = renderCompanyTab(); break;
+        case 'warehouse': container.innerHTML = renderWarehouseTab(); break;
+        case 'admin':
+          if (!state.adminAuth.isAuthenticated) {
+            state.activeTab = 'overview';
+            container.innerHTML = renderOverviewTab();
+          } else {
+            container.innerHTML = renderAdminTab();
+          }
+          break;
+      }
+    }
+
+    // =========================================================
+    // 5. TAB 1: OVERVIEW & SECURITY ARCHITECTURE
+    // =========================================================
+    function renderOverviewTab() {
+      const totalStockUnits = state.pharmacies.reduce((sum, ph) => sum + Object.values(ph.stock).reduce((a, b) => a + b, 0), 0);
+      return `
+        <div class="space-y-6 animate-fade">
+          <!-- Hero Card -->
+          <div class="bg-gradient-to-l from-brand-800 via-teal-800 to-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-lg relative overflow-hidden">
+            <div class="max-w-3xl relative z-10">
+              <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-xs font-semibold text-teal-100 mb-4">
+                <span>🔒 مشاركة آمنة معزولة الصلاحيات</span>
+                <span>•</span>
+                <span>تحديث مخزون لحظي POS</span>
+              </div>
+              <h2 class="text-2xl sm:text-3xl font-extrabold leading-snug mb-3">
+                منظومة متكاملة تربط المريض، الصيدلية، الطبيب، شركات الأدوية، والمخازن في شبكة واحدة
+              </h2>
+              <p class="text-sm sm:text-base text-slate-200 leading-relaxed mb-6">
+                ابحث عن الدواء بالسعر الجبري الرسمي، احجزه لمدة ساعتين، اصرف الروشتة الإلكترونية كاملة، واطلب النواقص من المخازن بضغطة زر — مع حماية كاملة لخصوصية البيانات وعزل تام لصلاحيات الإدارة عند مشاركة الرابط.
+              </p>
+              <div class="flex flex-wrap gap-3">
+                <button onclick="switchTab('patient')" class="px-5 py-3 rounded-xl bg-white text-brand-900 font-bold text-sm hover:bg-teal-50 transition shadow-sm">
+                  ابحث عن دواء أو روشتة الآن
+                </button>
+                <button onclick="copySafePublicLink()" class="px-5 py-3 rounded-xl bg-white/15 hover:bg-white/25 text-white border border-white/25 font-bold text-sm transition flex items-center gap-2">
+                  <span>نسخ رابط عام آمن للمشاركة</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Live Network KPIs -->
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+              <p class="text-xs font-semibold text-slate-500">الصيدليات الموثقة المتصلة</p>
+              <p class="text-2xl font-extrabold text-slate-900 mt-1 num-en">${state.pharmacies.length}</p>
+              <span class="inline-block mt-2 text-[11px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full font-semibold">مربوطة بالكاشير POS</span>
+            </div>
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+              <p class="text-xs font-semibold text-slate-500">إجمالي العبوات المتاحة حالياً</p>
+              <p class="text-2xl font-extrabold text-brand-700 mt-1 num-en">${totalStockUnits}</p>
+              <span class="inline-block mt-2 text-[11px] text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full font-semibold">${state.drugsCatalog.length} صنف بالكتالوج الموحد</span>
+            </div>
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+              <p class="text-xs font-semibold text-slate-500">المخازن وشركات التوزيع</p>
+              <p class="text-2xl font-extrabold text-slate-900 mt-1 num-en">${state.warehouses.length}</p>
+              <span class="inline-block mt-2 text-[11px] text-sky-700 bg-sky-50 px-2 py-0.5 rounded-full font-semibold">توريد خلال 90 دقيقة</span>
+            </div>
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+              <p class="text-xs font-semibold text-slate-500">حماية الروابط المشاركة</p>
+              <p class="text-lg font-extrabold text-emerald-700 mt-1">معزولة 100%</p>
+              <span class="inline-block mt-2 text-[11px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full font-semibold">لا تنقل جلسة الأدمن</span>
+            </div>
+          </div>
+
+          <!-- 5 Network Pillars Grid -->
+          <div>
+            <h3 class="text-lg font-extrabold text-slate-900 mb-3">أطراف الشبكة الخمسة (اضغط لتجربة كل بوابة)</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div onclick="switchTab('patient')" class="bg-white p-5 rounded-2xl border border-slate-200 hover:border-brand-500 cursor-pointer transition shadow-sm group">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-2xl">🧑‍⚕️</span>
+                  <span class="text-xs font-bold text-brand-700 group-hover:underline">دخول البوابة ←</span>
+                </div>
+                <h4 class="font-bold text-slate-900 mb-1">1. بوابة المريض</h4>
+                <p class="text-xs text-slate-600 leading-relaxed">بحث بالاسم أو الروشتة (<span class="num-en font-semibold">RX-2026</span>)، حجز الدواء لمدة ساعتين، اقتراح المثائل العلمية عند النقص، وبلاغات التسعيرة.</p>
+              </div>
+
+              <div onclick="switchTab('pharmacy')" class="bg-white p-5 rounded-2xl border border-slate-200 hover:border-brand-500 cursor-pointer transition shadow-sm group">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-2xl">🏥</span>
+                  <span class="text-xs font-bold text-brand-700 group-hover:underline">دخول البوابة ←</span>
+                </div>
+                <h4 class="font-bold text-slate-900 mb-1">2. بوابة الصيدلية (POS Sync)</h4>
+                <p class="text-xs text-slate-600 leading-relaxed">إدارة المخزون اللحظية، تنبيهات النواقص مع طلب فوري من أقرب مخزن، وسوق تبادل الرواكد وقرب الانتهاء بين الصيدليات.</p>
+              </div>
+
+              <div onclick="switchTab('doctor')" class="bg-white p-5 rounded-2xl border border-slate-200 hover:border-brand-500 cursor-pointer transition shadow-sm group">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-2xl">🩺</span>
+                  <span class="text-xs font-bold text-brand-700 group-hover:underline">دخول البوابة ←</span>
+                </div>
+                <h4 class="font-bold text-slate-900 mb-1">3. بوابة الطبيب</h4>
+                <p class="text-xs text-slate-600 leading-relaxed">معرفة توافر الأدوية والمثائل في الصيدليات المحيطة بالعيادة، وإصدار روشتات إلكترونية بأكواد فورية للمرضى.</p>
+              </div>
+
+              <div onclick="switchTab('company')" class="bg-white p-5 rounded-2xl border border-slate-200 hover:border-brand-500 cursor-pointer transition shadow-sm group">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-2xl">🏭</span>
+                  <span class="text-xs font-bold text-brand-700 group-hover:underline">دخول البوابة ←</span>
+                </div>
+                <h4 class="font-bold text-slate-900 mb-1">4. بوابة شركات الأدوية</h4>
+                <p class="text-xs text-slate-600 leading-relaxed">تحليلات مجمعة للاستهلاك والنواقص حسب المناطق الجغرافية (مع حماية أسرار مبيعات كل صيدلية) وخريطة الصيدليات.</p>
+              </div>
+
+              <div onclick="switchTab('warehouse')" class="bg-white p-5 rounded-2xl border border-slate-200 hover:border-brand-500 cursor-pointer transition shadow-sm group">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-2xl">🚚</span>
+                  <span class="text-xs font-bold text-brand-700 group-hover:underline">دخول البوابة ←</span>
+                </div>
+                <h4 class="font-bold text-slate-900 mb-1">5. المخازن وشركات التوزيع</h4>
+                <p class="text-xs text-slate-600 leading-relaxed">استقبال طلبات النواقص من الصيدليات وتأكيد التوريد ليُضاف الرصيد تلقائياً إلى مخزون الصيدلية.</p>
+              </div>
+
+              <div onclick="handleAdminButtonClick()" class="bg-slate-900 text-white p-5 rounded-2xl border border-slate-800 hover:border-amber-500 cursor-pointer transition shadow-sm group">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-2xl">🛡️</span>
+                  <span class="text-xs font-bold text-amber-400 group-hover:underline">${state.adminAuth.isAuthenticated ? 'مفتوحة الآن ←' : 'محمية بكلمة مرور 🔒'}</span>
+                </div>
+                <h4 class="font-bold text-white mb-1">بوابة الإدارة والرقابة</h4>
+                <p class="text-xs text-slate-300 leading-relaxed">توثيق التراخيص، فحص بلاغات التسعيرة، وإدارة الكتالوج الدوائي الموحد (معزولة تماماً عند مشاركة الرابط).</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // =========================================================
+    // 6. TAB 2: PATIENT PORTAL
+    // =========================================================
+    function renderPatientTab() {
+      const districts = ['الكل', ...new Set(state.pharmacies.map(p => p.district))];
+      const query = state.patientSearch.trim().toLowerCase();
+
+      // Filter matching drugs
+      const matchingDrugs = state.drugsCatalog.filter(d =>
+        !query ||
+        d.name.toLowerCase().includes(query) ||
+        d.activeIngredient.toLowerCase().includes(query) ||
+        d.category.toLowerCase().includes(query)
+      );
+
+      // Check if searched drug is out of stock everywhere so we suggest scientific equivalents
+      let alternativeSuggestionHtml = '';
+      if (query) {
+        const searchedDrug = state.drugsCatalog.find(d => d.name.toLowerCase().includes(query));
+        if (searchedDrug) {
+          const totalAvailable = state.pharmacies.reduce((sum, ph) => sum + (ph.stock[searchedDrug.id] || 0), 0);
+          if (totalAvailable === 0) {
+            const equivalents = state.drugsCatalog.filter(d => d.id !== searchedDrug.id && d.activeIngredient === searchedDrug.activeIngredient);
+            if (equivalents.length > 0) {
+              alternativeSuggestionHtml = `
+                <div class="p-4 rounded-2xl bg-amber-50 border border-amber-300 text-amber-950 animate-fade">
+                  <div class="flex items-start gap-3">
+                    <span class="text-xl">💡</span>
+                    <div class="flex-1">
+                      <h4 class="font-bold text-sm">محرك المثائل العلمية الذكي: صنف "${searchedDrug.name}" غير متوفر حالياً في المحيط</h4>
+                      <p class="text-xs text-amber-800 mt-1">يتوفر مثيل مطابق تماماً في المادة الفعالة (<span class="num-en font-semibold">${searchedDrug.activeIngredient}</span>) والتركيز:</p>
+                      <div class="mt-2 flex flex-wrap gap-2">
+                        ${equivalents.map(eq => `
+                          <button onclick="setPatientSearch('${eq.name.split(' ')[0]}')" class="px-3 py-1.5 rounded-xl bg-white border border-amber-300 text-xs font-bold text-amber-900 hover:bg-amber-100">
+                            عرض أماكن توفر: ${eq.name} (${eq.officialPrice} ج.م)
+                          </button>
+                        `).join('')}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              `;
+            }
+          }
+        }
+      }
+
+      // E-Prescription lookup result
+      let rxResultHtml = '';
+      if (state.rxLookupResult) {
+        const rx = state.rxLookupResult;
+        if (rx.notFound) {
+          rxResultHtml = `<div class="mt-3 p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 font-semibold">كود الروشتة غير موجود. جرب الكود التجريبي: <span class="num-en underline cursor-pointer" onclick="lookupRx('RX-2026')">RX-2026</span></div>`;
+        } else {
+          const rxDrugs = rx.drugIds.map(id => getDrugById(id)).filter(Boolean);
+          const completePharmacies = state.pharmacies.filter(ph => rx.drugIds.every(id => (ph.stock[id] || 0) > 0));
+          rxResultHtml = `
+            <div class="mt-3 p-4 rounded-xl bg-brand-50 border border-brand-200 space-y-2 animate-fade">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <span class="text-xs font-extrabold text-brand-900">روشتة إلكترونية معتمدة (${rx.code}) • ${rx.doctorName}</span>
+                <span class="text-xs text-brand-700">المريض: ${rx.patientName}</span>
+              </div>
+              <div class="flex flex-wrap gap-1.5">
+                ${rxDrugs.map(d => `<span class="px-2.5 py-1 rounded-lg bg-white border border-brand-200 text-xs font-semibold text-slate-800">${d.name} (${d.officialPrice} ج.م)</span>`).join('')}
+              </div>
+              <p class="text-xs font-bold text-emerald-800 pt-1">
+                الصيدليات التي يتوفر بها كامل أصناف الروشتة معاً (${completePharmacies.length}):
+                ${completePharmacies.map(p => `<span class="underline mr-2">${p.name} (${p.district})</span>`).join('')}
+              </p>
+            </div>
+          `;
+        }
+      }
+
+      return `
+        <div class="space-y-6 animate-fade">
+          <!-- Search & E-Prescription Bar -->
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div class="lg:col-span-2 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+              <h2 class="text-base font-extrabold text-slate-900">ابحث عن دوائك بالسعر الجبري الرسمي</h2>
+              <div class="flex flex-col sm:flex-row gap-2.5">
+                <input
+                  type="text"
+                  value="${state.patientSearch}"
+                  oninput="setPatientSearch(this.value)"
+                  placeholder="اكتب اسم الدواء أو المادة الفعالة (مثال: أوجمنتين، بنادول، كلكسان)..."
+                  class="flex-1 px-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-600 text-sm"
+                />
+                <select onchange="setPatientDistrict(this.value)" class="px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-sm font-semibold text-slate-700">
+                  ${districts.map(dist => `<option value="${dist}" ${state.patientDistrict === dist ? 'selected' : ''}>المنطقة: ${dist}</option>`).join('')}
+                </select>
+              </div>
+              <div class="flex flex-wrap items-center gap-1.5 text-xs text-slate-500">
+                <span>بحث سريع:</span>
+                ${['أوجمنتين', 'بنادول', 'كلكسان', 'كونكور'].map(term => `
+                  <button onclick="setPatientSearch('${term}')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-brand-50 hover:text-brand-700 font-semibold transition">${term}</button>
+                `).join('')}
+                ${state.patientSearch ? `<button onclick="setPatientSearch('')" class="px-2.5 py-1 rounded-lg text-rose-600 font-semibold">مسح البحث</button>` : ''}
+              </div>
+            </div>
+
+            <!-- E-Prescription Lookup Card -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+              <h3 class="text-base font-extrabold text-slate-900">صرف روشتة إلكترونية (QR / كود)</h3>
+              <p class="text-xs text-slate-500">أدخل كود الروشتة الصادر من الطبيب لإيجاد صيدلية توفر جميع الأصناف معاً.</p>
+              <div class="flex gap-2">
+                <input id="rx-code-input" type="text" value="${state.rxLookupInput}" placeholder="مثال: RX-2026" class="flex-1 px-3.5 py-2 rounded-xl border border-slate-300 text-sm num-en uppercase" />
+                <button onclick="lookupRx()" class="px-4 py-2 rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-xs font-bold transition">فحص</button>
+              </div>
+              ${rxResultHtml}
+            </div>
+          </div>
+
+          ${alternativeSuggestionHtml}
+
+          <!-- Active 2-Hour Reservations -->
+          ${state.reservations.length > 0 ? `
+            <div class="bg-emerald-950 text-white p-4 rounded-2xl shadow-sm">
+              <h3 class="text-xs font-bold text-emerald-300 uppercase tracking-wider mb-2.5">حجوزاتك النشطة (مضمونة لمدة ساعتين في الصيدلية)</h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                ${state.reservations.map(res => {
+                  const ph = getPharmacyById(res.pharmacyId);
+                  const dr = getDrugById(res.drugId);
+                  return `
+                    <div class="p-3 rounded-xl bg-white/10 border border-white/15 flex items-center justify-between gap-3">
+                      <div>
+                        <p class="text-sm font-bold">${dr ? dr.name : ''}</p>
+                        <p class="text-xs text-emerald-200">${ph ? ph.name : ''} • كود الحجز: <span class="num-en font-bold">${res.id}</span></p>
+                      </div>
+                      <div class="text-left">
+                        <span class="text-[11px] text-emerald-300 block">الوقت المتبقي</span>
+                        <span data-res-timer="${res.id}" class="text-base font-extrabold text-amber-300 num-en">${formatCountdown(res.secondsLeft)}</span>
+                      </div>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            </div>
+          ` : ''}
+
+          <!-- Results List -->
+          <div class="space-y-4">
+            ${matchingDrugs.map(drug => {
+              const availablePharmacies = state.pharmacies.filter(ph =>
+                (state.patientDistrict === 'الكل' || ph.district === state.patientDistrict) &&
+                (ph.stock[drug.id] || 0) > 0
+              );
+              return `
+                <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+                  <div class="flex flex-wrap items-start justify-between gap-3 pb-4 border-b border-slate-100">
+                    <div>
+                      <div class="flex flex-wrap items-center gap-2">
+                        <h3 class="text-base sm:text-lg font-extrabold text-slate-900">${drug.name}</h3>
+                        <span class="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 text-xs font-semibold">${drug.category}</span>
+                      </div>
+                      <p class="text-xs text-slate-500 mt-1">المادة الفعالة: <span class="num-en font-semibold text-slate-700">${drug.activeIngredient}</span> • إنتاج: ${drug.company}</p>
+                    </div>
+                    <div class="bg-brand-50 border border-brand-200 px-4 py-2 rounded-xl text-left">
+                      <span class="block text-[11px] text-brand-700 font-semibold">السعر الجبري الموحد</span>
+                      <span class="text-lg font-extrabold text-brand-900 num-en">${drug.officialPrice} ج.م</span>
+                    </div>
+                  </div>
+
+                  ${availablePharmacies.length === 0 ? `
+                    <div class="pt-4 text-xs text-rose-600 font-semibold">غير متوفر حالياً في الصيدليات المحددة لهذا النطاق.</div>
+                  ` : `
+                    <div class="pt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                      ${availablePharmacies.map(ph => {
+                        const qty = ph.stock[drug.id] || 0;
+                        return `
+                          <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex flex-col justify-between gap-3">
+                            <div>
+                              <div class="flex items-center justify-between gap-2">
+                                <h4 class="font-bold text-sm text-slate-900">${ph.name}</h4>
+                                <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold">متاح (<span class="num-en">${qty}</span>)</span>
+                              </div>
+                              <p class="text-xs text-slate-500 mt-1">${ph.district} • ${ph.address}</p>
+                              <p class="text-xs text-slate-700 font-semibold mt-1.5 num-en">📞 ${ph.phone}</p>
+                            </div>
+                            <div class="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-200/80">
+                              <button onclick="reserveDrug('${ph.id}', '${drug.id}')" class="flex-1 px-3 py-2 rounded-lg bg-brand-700 hover:bg-brand-800 text-white text-xs font-bold transition">
+                                حجز لمدة ساعتين
+                              </button>
+                              <button onclick="openReportModal('${ph.name}', '${drug.name}', ${drug.officialPrice})" class="px-2.5 py-2 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold transition" title="إبلاغ عن بيع بسعر أعلى من الرسمي">
+                                بلاغ سعر
+                              </button>
+                            </div>
+                          </div>
+                        `;
+                      }).join('')}
+                    </div>
+                  `}
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function setPatientSearch(val) {
+      state.patientSearch = val;
+      renderCurrentTab();
+    }
+
+    function setPatientDistrict(val) {
+      state.patientDistrict = val;
+      renderCurrentTab();
+    }
+
+    function lookupRx(presetCode) {
+      const inp = document.getElementById('rx-code-input');
+      const code = (presetCode || (inp ? inp.value : '')).trim().toUpperCase();
+      state.rxLookupInput = code;
+      const found = state.prescriptions.find(r => r.code.toUpperCase() === code);
+      state.rxLookupResult = found ? found : { notFound: true };
+      renderCurrentTab();
+    }
+
+    function reserveDrug(pharmacyId, drugId) {
+      const ph = getPharmacyById(pharmacyId);
+      const dr = getDrugById(drugId);
+      if (!ph || !dr || (ph.stock[drugId] || 0) <= 0) return;
+
+      ph.stock[drugId] -= 1;
+      const resId = 'RES-' + Math.floor(100 + Math.random() * 899);
+      state.reservations.unshift({
+        id: resId,
+        patientName: 'مريض (حجز فوري)',
+        pharmacyId,
+        drugId,
+        secondsLeft: 7200,
+        status: 'active'
+      });
+      renderCurrentTab();
+      showToast(`تم حجز (${dr.name}) في ${ph.name} لمدة ساعتين. كود الحجز: ${resId}`, 'success');
+    }
+
+    function openReportModal(pharmacyName, drugName, officialPrice) {
+      document.getElementById('report-pharmacy-name').value = pharmacyName;
+      document.getElementById('report-drug-name').value = drugName;
+      document.getElementById('report-official-price').value = officialPrice;
+      document.getElementById('report-summary-box').innerHTML = `
+        <strong>الصيدلية:</strong> ${pharmacyName}<br/>
+        <strong>الصنف:</strong> ${drugName}<br/>
+        <strong>السعر الجبري المسجل:</strong> <span class="num-en font-bold text-brand-700">${officialPrice} ج.م</span>
+      `;
+      document.getElementById('report-charged-price').value = '';
+      document.getElementById('report-receipt-code').value = '';
+      document.getElementById('report-modal').classList.remove('hidden');
+    }
+
+    function closeReportModal() {
+      document.getElementById('report-modal').classList.add('hidden');
+    }
+
+    function submitPriceReport(e) {
+      e.preventDefault();
+      const pharmacyName = document.getElementById('report-pharmacy-name').value;
+      const drugName = document.getElementById('report-drug-name').value;
+      const officialPrice = Number(document.getElementById('report-official-price').value);
+      const chargedPrice = Number(document.getElementById('report-charged-price').value);
+      const receiptCode = document.getElementById('report-receipt-code').value.trim();
+
+      state.priceReports.unshift({
+        id: 'REP-' + Math.floor(700 + Math.random() * 299),
+        pharmacyName,
+        drugName,
+        officialPrice,
+        chargedPrice,
+        receiptCode,
+        status: 'pending'
+      });
+      closeReportModal();
+      renderTabs();
+      showToast('تم إرسال البلاغ الموثق بالفاتورة إلى إدارة الرقابة لمراجعته فوراً.', 'success');
+    }
+
+    // =========================================================
+    // 7. TAB 3: PHARMACY PORTAL (POS SYNC + B2B DEAD-STOCK)
+    // =========================================================
+    function renderPharmacyTab() {
+      const currentPh = getPharmacyById(state.selectedPharmacyId) || state.pharmacies[0];
+      const phReservations = state.reservations.filter(r => r.pharmacyId === currentPh.id);
+
+      return `
+        <div class="space-y-6 animate-fade">
+          <!-- Pharmacy Selector & POS Status -->
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-4">
+            <div class="flex flex-wrap items-center gap-3">
+              <div>
+                <label class="block text-[11px] font-bold text-slate-500">اختر الصيدلية للمحاكاة</label>
+                <select onchange="selectPharmacy(this.value)" class="mt-1 px-3.5 py-2 rounded-xl border border-slate-300 font-bold text-sm text-slate-900 bg-white">
+                  ${state.pharmacies.map(p => `<option value="${p.id}" ${p.id === currentPh.id ? 'selected' : ''}>${p.name} (${p.district})</option>`).join('')}
+                </select>
+              </div>
+              <div class="px-3.5 py-2 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 font-bold flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                <span>مزامنة الكاشير (POS Live Sync) نشطة</span>
+              </div>
+            </div>
+            <div class="text-xs text-slate-600">
+              <p><strong>العنوان:</strong> ${currentPh.address}</p>
+              <p><strong>الأطباء المحيطون في المنطقة:</strong> د. طارق المنشاوي (باطنة)، د. نادية عبد الرحمن (أطفال)</p>
+            </div>
+          </div>
+
+          <!-- Inventory Table & Shortage Restock -->
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="p-5 border-b border-slate-100 flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <h3 class="font-extrabold text-slate-900 text-base">إدارة المخزون اللحظية وطلب النواقص من المخازن</h3>
+                <p class="text-xs text-slate-500">الأسعار الجبرية موحدة من الكتالوج الرسمي، ويمكنك تعديل الكميات أو طلب النواقص بنقرة واحدة.</p>
+              </div>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-right text-sm">
+                <thead class="bg-slate-50 text-slate-600 text-xs border-b border-slate-200">
+                  <tr>
+                    <th class="py-3 px-4">الصنف الدوائي</th>
+                    <th class="py-3 px-4">السعر الرسمي</th>
+                    <th class="py-3 px-4">الرصيد الحالي</th>
+                    <th class="py-3 px-4">حالة المخزون</th>
+                    <th class="py-3 px-4">التحكم / طلب من المخزن</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                  ${state.drugsCatalog.map(drug => {
+                    const qty = currentPh.stock[drug.id] || 0;
+                    const isLow = qty <= 4;
+                    return `
+                      <tr class="hover:bg-slate-50/70">
+                        <td class="py-3.5 px-4">
+                          <p class="font-bold text-slate-900">${drug.name}</p>
+                          <p class="text-[11px] text-slate-500">الشركة: ${drug.company}</p>
+                        </td>
+                        <td class="py-3.5 px-4 font-bold text-slate-800 num-en">${drug.officialPrice} ج.م</td>
+                        <td class="py-3.5 px-4">
+                          <div class="inline-flex items-center gap-2 bg-slate-100 rounded-lg p-1">
+                            <button onclick="adjustPharmacyStock('${currentPh.id}', '${drug.id}', -1)" class="w-7 h-7 rounded-md bg-white shadow-sm font-bold text-slate-700 hover:bg-rose-50">-</button>
+                            <span class="w-8 text-center font-extrabold num-en">${qty}</span>
+                            <button onclick="adjustPharmacyStock('${currentPh.id}', '${drug.id}', 1)" class="w-7 h-7 rounded-md bg-white shadow-sm font-bold text-slate-700 hover:bg-emerald-50">+</button>
+                          </div>
+                        </td>
+                        <td class="py-3.5 px-4">
+                          ${qty === 0
+                            ? '<span class="px-2.5 py-1 rounded-full bg-rose-100 text-rose-700 text-xs font-bold">ناقص تماماً</span>'
+                            : isLow
+                              ? '<span class="px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-bold">قارب على النفاد</span>'
+                              : '<span class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold">متوفر بكفاية</span>'}
+                        </td>
+                        <td class="py-3.5 px-4">
+                          ${isLow ? `
+                            <button onclick="orderFromWarehouse('${currentPh.id}', '${drug.id}', 15)" class="px-3 py-1.5 rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-xs font-bold transition shadow-sm">
+                              اطلب 15 علبة من المخزن
+                            </button>
+                          ` : '<span class="text-xs text-slate-400">رصيد آمن</span>'}
+                        </td>
+                      </tr>
+                    `;
+                  }).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- B2B Dead-Stock & Near-Expiry Exchange -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+              <div class="flex items-center justify-between">
+                <h3 class="font-extrabold text-slate-900 text-base">سوق تبادل الرواكد وقرب الانتهاء (B2B)</h3>
+                <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-sky-50 text-sky-700">بين الصيدليات فقط</span>
+              </div>
+              <p class="text-xs text-slate-500">استفد من خصومات إضافية بسحب الأصناف الراكدة لدى صيدليات المناطق المجاورة.</p>
+              <div class="space-y-2.5">
+                ${state.deadStockOffers.map(offer => {
+                  const fromPh = getPharmacyById(offer.fromPharmacyId);
+                  const dr = getDrugById(offer.drugId);
+                  return `
+                    <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-3">
+                      <div>
+                        <p class="font-bold text-sm text-slate-900">${dr ? dr.name : ''} (${offer.qty} علبة)</p>
+                        <p class="text-xs text-slate-500">من: ${fromPh ? fromPh.name : ''} • صلاحية: <span class="num-en font-semibold">${offer.expiry}</span> • خصم إضافي <span class="num-en font-bold text-emerald-700">${offer.discountPercent}%</span></p>
+                      </div>
+                      ${offer.claimedBy
+                        ? `<span class="text-xs font-bold text-emerald-700 bg-emerald-100 px-3 py-1 rounded-lg">تم السحب</span>`
+                        : `<button onclick="claimDeadStock('${offer.id}', '${currentPh.id}')" class="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold">سحب لمخزوني</button>`
+                      }
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            </div>
+
+            <!-- Incoming Patient Reservations -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+              <h3 class="font-extrabold text-slate-900 text-base">حجوزات المرضى الواردة للصيدلية</h3>
+              ${phReservations.length === 0 ? `
+                <p class="text-xs text-slate-500 py-6 text-center">لا توجد حجوزات نشطة حالياً لهذه الصيدلية.</p>
+              ` : phReservations.map(r => {
+                const dr = getDrugById(r.drugId);
+                return `
+                  <div class="p-3.5 rounded-xl bg-amber-50/70 border border-amber-200 flex items-center justify-between gap-3">
+                    <div>
+                      <p class="font-bold text-sm text-slate-900">${dr ? dr.name : ''}</p>
+                      <p class="text-xs text-slate-600">كود الحجز: <span class="num-en font-bold">${r.id}</span> • ينتهي خلال <span data-res-timer="${r.id}" class="num-en font-bold text-amber-800">${formatCountdown(r.secondsLeft)}</span></p>
+                    </div>
+                    <button onclick="completeReservation('${r.id}')" class="px-3 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold">تأكيد التسليم</button>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function selectPharmacy(id) {
+      state.selectedPharmacyId = id;
+      renderCurrentTab();
+    }
+
+    function adjustPharmacyStock(pharmacyId, drugId, delta) {
+      const ph = getPharmacyById(pharmacyId);
+      if (!ph) return;
+      const next = Math.max(0, (ph.stock[drugId] || 0) + delta);
+      ph.stock[drugId] = next;
+      renderCurrentTab();
+    }
+
+    function orderFromWarehouse(pharmacyId, drugId, qty) {
+      const wh = state.warehouses[0];
+      const ordId = 'ORD-' + Math.floor(500 + Math.random() * 499);
+      state.warehouseOrders.unshift({
+        id: ordId,
+        pharmacyId,
+        warehouseId: wh.id,
+        drugId,
+        qty,
+        status: 'pending',
+        time: 'الآن'
+      });
+      renderTabs();
+      showToast(`تم إرسال طلب شراء (${qty} علبة) إلى ${wh.name}. انتقل لبوابة المخازن لتأكيد التوريد.`, 'success');
+    }
+
+    function claimDeadStock(offerId, targetPharmacyId) {
+      const offer = state.deadStockOffers.find(o => o.id === offerId);
+      const targetPh = getPharmacyById(targetPharmacyId);
+      if (!offer || !targetPh || offer.claimedBy) return;
+
+      offer.claimedBy = targetPh.name;
+      targetPh.stock[offer.drugId] = (targetPh.stock[offer.drugId] || 0) + offer.qty;
+      renderCurrentTab();
+      showToast(`تم نقل ${offer.qty} علبة من سوق الرواكد وإضافتها إلى مخزون ${targetPh.name}.`, 'success');
+    }
+
+    function completeReservation(resId) {
+      state.reservations = state.reservations.filter(r => r.id !== resId);
+      renderCurrentTab();
+      showToast('تم تأكيد تسليم الدواء المحجوز للمريض.', 'success');
+    }
+
+    // =========================================================
+    // 8. TAB 4: DOCTOR PORTAL
+    // =========================================================
+    function renderDoctorTab() {
+      return `
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-fade">
+          <!-- Issue Digital Prescription -->
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <div>
+              <h2 class="text-lg font-extrabold text-slate-900">إصدار روشتة إلكترونية ذكية للمريض</h2>
+              <p class="text-xs text-slate-500 mt-1">اختر الأدوية المتاحة في محيط العيادة؛ سيحصل المريض على كود فوري يرشح له الصيدليات التي توفر الروشتة كاملة.</p>
+            </div>
+            <form onsubmit="createDigitalPrescription(event)" class="space-y-4">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">اسم المريض</label>
+                <input id="doc-patient-name" type="text" required placeholder="مثال: محمود حسن" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm" />
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-2">اختر الأصناف الدوائية (مع حالة التوافر حول العيادة)</label>
+                <div class="space-y-2 max-h-64 overflow-y-auto pr-1">
+                  ${state.drugsCatalog.map(d => {
+                    const totalNearby = state.pharmacies.reduce((s, p) => s + (p.stock[d.id] || 0), 0);
+                    return `
+                      <label class="flex items-center justify-between p-3 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer">
+                        <div class="flex items-center gap-2.5">
+                          <input type="checkbox" name="rx-drugs" value="${d.id}" class="w-4 h-4 text-brand-700 rounded" />
+                          <div>
+                            <p class="text-xs font-bold text-slate-900">${d.name}</p>
+                            <p class="text-[11px] text-slate-500 num-en">${d.activeIngredient} • ${d.officialPrice} ج.م</p>
+                          </div>
+                        </div>
+                        <span class="text-[11px] font-bold px-2 py-0.5 rounded-full ${totalNearby > 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-700'}">
+                          ${totalNearby > 0 ? `متوفر (${totalNearby} علبة)` : 'ناقص - اكتب المثيل'}
+                        </span>
+                      </label>
+                    `;
+                  }).join('')}
+                </div>
+              </div>
+              <button type="submit" class="w-full py-3 rounded-xl bg-brand-700 hover:bg-brand-800 text-white font-bold text-sm transition shadow-sm">
+                توليد كود الروشتة الإلكترونية للمريض
+              </button>
+            </form>
+          </div>
+
+          <!-- Recent Prescriptions Issued -->
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <h3 class="text-lg font-extrabold text-slate-900">الروشتات الإلكترونية الصادرة</h3>
+            <div class="space-y-3">
+              ${state.prescriptions.map(rx => {
+                const names = rx.drugIds.map(id => getDrugById(id)?.name).filter(Boolean);
+                return `
+                  <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                    <div class="flex items-center justify-between">
+                      <span class="px-3 py-1 rounded-lg bg-brand-700 text-white text-xs font-extrabold num-en">${rx.code}</span>
+                      <span class="text-xs text-slate-500">${rx.createdAt}</span>
+                    </div>
+                    <p class="text-sm font-bold text-slate-900">المريض: ${rx.patientName}</p>
+                    <p class="text-xs text-slate-600">الأصناف: ${names.join(' + ')}</p>
+                    <button onclick="testRxInPatientPortal('${rx.code}')" class="text-xs font-bold text-brand-700 hover:underline">
+                      معاينة بحث المريض بهذا الكود ←
+                    </button>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function createDigitalPrescription(e) {
+      e.preventDefault();
+      const patientName = document.getElementById('doc-patient-name').value.trim();
+      const checked = Array.from(document.querySelectorAll('input[name="rx-drugs"]:checked')).map(el => el.value);
+      if (checked.length === 0) {
+        showToast('يرجى اختيار صنف دوائي واحد على الأقل.', 'error');
+        return;
+      }
+      const code = 'RX-' + Math.floor(3000 + Math.random() * 6999);
+      state.prescriptions.unshift({
+        code,
+        doctorName: 'د. طارق المنشاوي (باطنة وقلب)',
+        patientName,
+        drugIds: checked,
+        createdAt: 'الآن'
+      });
+      renderCurrentTab();
+      showToast(`تم إصدار الروشتة الإلكترونية بنجاح بكود: ${code}`, 'success');
+    }
+
+    function testRxInPatientPortal(code) {
+      state.activeTab = 'patient';
+      renderTabs();
+      lookupRx(code);
+    }
+
+    // =========================================================
+    // 9. TAB 5: PHARMA COMPANIES PORTAL (AGGREGATED REGIONAL DATA)
+    // =========================================================
+    function renderCompanyTab() {
+      const regions = [
+        { name: 'سموحة', demandLevel: 'استهلاك مرتفع جداً', shortageRisk: 'نقص في مضادات التجلط', activePharmacies: 42, monthlyUnits: 14200 },
+        { name: 'سيدي جابر', demandLevel: 'استهلاك مرتفع', shortageRisk: 'مستقر', activePharmacies: 35, monthlyUnits: 11850 },
+        { name: 'لوران', demandLevel: 'استهلاك متوسط', shortageRisk: 'طلب متزايد على المسكنات', activePharmacies: 28, monthlyUnits: 8900 }
+      ];
+
+      return `
+        <div class="space-y-6 animate-fade">
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 class="text-lg font-extrabold text-slate-900">لوحة تحليلات شركات الأدوية (Regional Market Intelligence)</h2>
+              <p class="text-xs text-slate-500 mt-1">تعرض المؤشرات المجمعة على مستوى المناطق الجغرافية لدعم قرارات التوزيع دون كشف أسرار مبيعات كل صيدلية منفردة.</p>
+            </div>
+            <span class="px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs font-bold text-emerald-800">
+              🔒 خصوصية الصيدليات محمية (بيانات مجمعة)
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            ${regions.map(r => `
+              <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                <div class="flex items-center justify-between">
+                  <h3 class="text-base font-extrabold text-slate-900">منطقة ${r.name}</h3>
+                  <span class="px-2.5 py-1 rounded-full bg-brand-50 text-brand-700 text-xs font-bold">${r.demandLevel}</span>
+                </div>
+                <div class="p-3 rounded-xl bg-slate-50 border border-slate-100 space-y-1.5 text-xs">
+                  <p class="flex justify-between"><span>الصيدليات المتاحة بالمنطقة:</span> <strong class="num-en">${r.activePharmacies} صيدلية</strong></p>
+                  <p class="flex justify-between"><span>معدل الاستهلاك الشهري المجمع:</span> <strong class="num-en">${r.monthlyUnits.toLocaleString()} عبوة</strong></p>
+                  <p class="flex justify-between"><span>مؤشر النواقص:</span> <strong class="text-amber-700">${r.shortageRisk}</strong></p>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+
+          <!-- Directory of Available Pharmacies in Region -->
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <h3 class="font-extrabold text-slate-900 text-base mb-3">الصيدليات المعتمدة المتاحة للتوريد المباشر والتنسيق</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+              ${state.pharmacies.map(ph => `
+                <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/70">
+                  <h4 class="font-bold text-sm text-slate-900">${ph.name}</h4>
+                  <p class="text-xs text-slate-500 mt-1">${ph.district} • ${ph.address}</p>
+                  <p class="text-xs font-bold text-brand-700 mt-2 num-en">📞 ${ph.phone}</p>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // =========================================================
+    // 10. TAB 6: WAREHOUSES & DISTRIBUTORS PORTAL
+    // =========================================================
+    function renderWarehouseTab() {
+      return `
+        <div class="space-y-6 animate-fade">
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <h2 class="text-lg font-extrabold text-slate-900">بوابة المخازن وشركات التوزيع (إمداد الصيدليات)</h2>
+            <p class="text-xs text-slate-500 mt-1">استقبال طلبات النواقص من الصيدليات وتأكيد التوريد ليتم تحديث رصيد الصيدلية تلقائياً.</p>
+          </div>
+
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="p-4 border-b border-slate-100 font-extrabold text-sm text-slate-900">طلبات الشراء الواردة من الصيدليات</div>
+            <div class="divide-y divide-slate-100">
+              ${state.warehouseOrders.map(ord => {
+                const ph = getPharmacyById(ord.pharmacyId);
+                const dr = getDrugById(ord.drugId);
+                return `
+                  <div class="p-4 flex flex-wrap items-center justify-between gap-4">
+                    <div>
+                      <div class="flex items-center gap-2">
+                        <span class="text-xs font-extrabold px-2.5 py-0.5 rounded-lg bg-slate-100 num-en">${ord.id}</span>
+                        <h4 class="font-bold text-sm text-slate-900">${ph ? ph.name : ''} (${ph ? ph.district : ''})</h4>
+                      </div>
+                      <p class="text-xs text-slate-600 mt-1">الصنف المطلوب: <strong>${dr ? dr.name : ''}</strong> • الكمية: <strong class="num-en">${ord.qty} علبة</strong> • ${ord.time}</p>
+                    </div>
+                    <div>
+                      ${ord.status === 'pending'
+                        ? `<button onclick="fulfillWarehouseOrder('${ord.id}')" class="px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold shadow-sm transition">تأكيد التوريد وإضافة الرصيد للصيدلية</button>`
+                        : `<span class="px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-bold">✓ تم التوريد وتحديث المخزون</span>`
+                      }
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function fulfillWarehouseOrder(orderId) {
+      const ord = state.warehouseOrders.find(o => o.id === orderId);
+      if (!ord || ord.status !== 'pending') return;
+      ord.status = 'delivered';
+      const ph = getPharmacyById(ord.pharmacyId);
+      if (ph) {
+        ph.stock[ord.drugId] = (ph.stock[ord.drugId] || 0) + ord.qty;
+      }
+      renderTabs();
+      renderCurrentTab();
+      showToast(`تم تأكيد التوريد وإضافة ${ord.qty} علبة إلى رصيد ${ph ? ph.name : 'الصيدلية'} تلقائياً.`, 'success');
+    }
+
+    // =========================================================
+    // 11. TAB 7: ADMIN PANEL (PROTECTED BY KHALED / ELPREMO)
+    // =========================================================
+    function renderAdminTab() {
+      return `
+        <div class="space-y-6 animate-fade">
+          <!-- Security & Link Isolation Control Center -->
+          <div class="bg-slate-900 text-white p-6 rounded-2xl shadow-md border border-slate-800">
+            <div class="flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/30 text-xs font-bold">Super Admin</span>
+                  <h2 class="text-lg font-extrabold">مركز التحكم والأمان — ${state.adminAuth.adminName}</h2>
+                </div>
+                <p class="text-xs text-slate-300 mt-1.5 leading-relaxed max-w-2xl">
+                  حماية الروابط مفعلة: بيانات دخولك وصلاحياتك محفوظة في الذاكرة المؤقتة (<span class="num-en">RAM</span>) لجهازك الحالي فقط ولا تُخزن في الرابط. أي شخص ترسل له الرابط سيدخل بوضع الزائر العام ولن يرى هذه اللوحة.
+                </p>
+              </div>
+              <div class="flex flex-wrap gap-2">
+                <button onclick="copySafePublicLink()" class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition">
+                  نسخ رابط عام آمن للمشاركة
+                </button>
+                <button onclick="logoutAdmin()" class="px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition">
+                  قفل الجلسة والخروج
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Admin Modules Grid -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- 1. Pending Account Verifications -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+              <h3 class="font-extrabold text-slate-900 text-base">طلبات توثيق الحسابات الجديدة (${state.pendingVerifications.length})</h3>
+              ${state.pendingVerifications.length === 0 ? `
+                <p class="text-xs text-slate-500 py-4">تمت مراجعة واعتماد كافة طلبات التوثيق.</p>
+              ` : state.pendingVerifications.map(v => `
+                <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-3">
+                  <div>
+                    <span class="text-[11px] font-bold px-2 py-0.5 rounded bg-brand-100 text-brand-800">${v.type}</span>
+                    <h4 class="font-bold text-sm text-slate-900 mt-1">${v.name}</h4>
+                    <p class="text-xs text-slate-500">ترخيص: <span class="num-en">${v.licenseNo}</span> • ${v.docStatus}</p>
+                  </div>
+                  <button onclick="approveVerification('${v.id}')" class="px-3.5 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold">اعتماد وتفعيل</button>
+                </div>
+              `).join('')}
+            </div>
+
+            <!-- 2. Price Violation Reports -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+              <h3 class="font-extrabold text-slate-900 text-base">بلاغات اختلاف التسعيرة الجبرية (${state.priceReports.length})</h3>
+              ${state.priceReports.map(rep => `
+                <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-3">
+                  <div>
+                    <h4 class="font-bold text-sm text-slate-900">${rep.pharmacyName}</h4>
+                    <p class="text-xs text-slate-600">${rep.drugName} • الرسمي: <strong class="num-en">${rep.officialPrice} ج.م</strong> | المُباع: <strong class="text-rose-700 num-en">${rep.chargedPrice} ج.م</strong></p>
+                    <p class="text-[11px] text-slate-500">فاتورة موثقة: <span class="num-en font-semibold">${rep.receiptCode}</span></p>
+                  </div>
+                  ${rep.status === 'pending'
+                    ? `<button onclick="resolvePriceReport('${rep.id}')" class="px-3 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold">توجيه إنذار وتثبيت السعر</button>`
+                    : `<span class="text-xs font-bold text-emerald-700 bg-emerald-100 px-2.5 py-1 rounded-lg">تم اتخاذ إجراء</span>`
+                  }
+                </div>
+              `).join('')}
+            </div>
+          </div>
+
+          <!-- 3. Unified Drug Master Catalog Management -->
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <h3 class="font-extrabold text-slate-900 text-base">إضافة صنف جديد للكتالوج الدوائي الموحد</h3>
+            <form onsubmit="adminAddCatalogDrug(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+              <input id="adm-drug-name" type="text" required placeholder="الاسم التجاري والتركيز" class="px-3 py-2 rounded-xl border border-slate-300 text-xs" />
+              <input id="adm-drug-active" type="text" required placeholder="المادة الفعالة (English)" class="px-3 py-2 rounded-xl border border-slate-300 text-xs num-en" />
+              <input id="adm-drug-price" type="number" step="0.5" required placeholder="السعر الجبري (ج.م)" class="px-3 py-2 rounded-xl border border-slate-300 text-xs num-en" />
+              <input id="adm-drug-company" type="text" required placeholder="الشركة المنتجة" class="px-3 py-2 rounded-xl border border-slate-300 text-xs" />
+              <button type="submit" class="px-4 py-2 rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-xs font-bold">إضافة وتعميم على الشبكة</button>
+            </form>
+          </div>
+        </div>
+      `;
+    }
+
+    function approveVerification(verId) {
+      const item = state.pendingVerifications.find(v => v.id === verId);
+      if (!item) return;
+      state.pendingVerifications = state.pendingVerifications.filter(v => v.id !== verId);
+      if (item.type === 'صيدلية') {
+        state.pharmacies.push({
+          id: 'ph-' + (state.pharmacies.length + 1),
+          name: item.name,
+          district: item.district,
+          address: `شارع رئيسي - ${item.district}`,
+          phone: '01099887766',
+          posConnected: true,
+          verified: true,
+          stock: { 'd-1': 10, 'd-2': 20, 'd-3': 4, 'd-4': 8, 'd-5': 12, 'd-6': 10 }
+        });
+      }
+      renderTabs();
+      renderCurrentTab();
+      showToast(`تم اعتماد وتفعيل (${item.name}) وإضافته للشبكة فوراً.`, 'success');
+    }
+
+    function resolvePriceReport(repId) {
+      const rep = state.priceReports.find(r => r.id === repId);
+      if (!rep) return;
+      rep.status = 'resolved';
+      renderTabs();
+      renderCurrentTab();
+      showToast(`تم توجيه إنذار رسمي لـ ${rep.pharmacyName} وإلزامها بالسعر الجبري.`, 'success');
+    }
+
+    function adminAddCatalogDrug(e) {
+      e.preventDefault();
+      const name = document.getElementById('adm-drug-name').value.trim();
+      const activeIngredient = document.getElementById('adm-drug-active').value.trim();
+      const officialPrice = Number(document.getElementById('adm-drug-price').value);
+      const company = document.getElementById('adm-drug-company').value.trim();
+
+      const newId = 'd-' + (state.drugsCatalog.length + 1);
+      state.drugsCatalog.push({
+        id: newId,
+        barcode: '622100100' + (state.drugsCatalog.length + 1),
+        name,
+        activeIngredient,
+        officialPrice,
+        company,
+        category: 'مضاف حديثاً'
+      });
+      state.pharmacies.forEach(ph => { ph.stock[newId] = 5; });
+      renderCurrentTab();
+      showToast(`تم إضافة (${name}) بسعر ${officialPrice} ج.م وتعميمه على كافة الصيدليات.`, 'success');
+    }
+
+    // =========================================================
+    // 12. SAFE INITIALIZATION
+    // =========================================================
+    function initApp() {
+      updateAdminSecurityUI();
+      renderTabs();
+      renderCurrentTab();
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initApp);
+    } else {
+      initApp();
+    }
+  </script>
+</body>
+</html>
